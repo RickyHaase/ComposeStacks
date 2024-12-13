@@ -1,0 +1,46 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: always
+    environment:
+      DOMAIN: https://${HOSTNAME}.${TAILNET} # required when using a reverse proxy; your domain; vaultwarden needs to know it's https to work properly with attachments
+      SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED}
+
+      # Gmail configuration
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURITY: starttls
+      SMTP_FROM: ${EMAILADDR}
+      SMTP_USERNAME: ${EMAILADDR}
+      SMTP_PASSWORD: ${GMAILPASS}
+
+      # Enable Admin GUI: https://github.com/dani-garcia/vaultwarden/wiki/Enabling-admin-page
+      # Leave disabled is prefered and continue to use environment variables instead: https://github.com/dani-garcia/vaultwarden/wiki/Configuration-overview
+      # ADMIN_TOKEN: ${ADMIN_TOKEN}
+
+    volumes:
+      - ./vw-data:/data
+    # disable exposing ports because we want everything to be accessible only through tailscale
+    # ports:
+    #   - 80:80
+    network_mode: service:ts-vaultwarden
+
+  ts-vaultwarden:
+    image: tailscale/tailscale
+    container_name: ts-vaultwarden
+    hostname: ${HOSTNAME}
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/serve-config.json
+      - TS_USERSPACE=false
+    volumes:
+      - ./ts-state:/var/lib/tailscale
+      - ./ts-config:/config # must use folder instead of just direct exposing file inorder for tailscale to automatically apply config changes upon file change
+    cap_add:
+      - net_admin
+      - sys_module
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    restart: unless-stopped
