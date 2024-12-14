@@ -2,6 +2,7 @@ version: "3.1"
 services:
   # this is the ghost container - nothing needs to be changed here if only running a single ghost instance
   ghost:
+    container_name: ghost
     image: ghost:5
     restart: always
 
@@ -39,6 +40,7 @@ services:
   # the ghost DB will be fine as-is, even when running multiple ghost instances off one DB
   # To-Do: Setup multi-user for running multiple ghost instances
   ghost-db:
+    container_name: ghost-db
     image: mysql:8.0
     restart: always
     environment:
