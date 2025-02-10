@@ -34,7 +34,7 @@ services:
       - ./ghost:/var/lib/ghost/content
     networks:
       - frontend
-      - ghost-db_net
+      - ghost-backend
 
   # the ghost DB will be fine as-is, even when running multiple ghost instances off one DB
   # To-Do: Setup multi-user for running multiple ghost instances
